@@ -1,0 +1,67 @@
+.ride-control-panel {
+  margin-top: 15px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #007bff;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-bottom: 15px;
+  text-transform: uppercase;
+}
+
+.status-badge[data-status="ACTIVE"],
+.status-badge[data-status="PENDING"] { background: #fff3cd; color: #856404; }
+
+.status-badge[data-status="ACCEPTED"] { background: #cce5ff; color: #004085; }
+
+.status-badge[data-status="IN_PROGRESS"] { background: #d4edda; color: #155724; }
+
+.status-badge[data-status="COMPLETED"] { background: #e2e3e5; color: #383d41; }
+
+.rcp-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.action-btn {
+  flex: 1;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: white;
+}
+
+.action-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.accept-btn { background: #28a745; }
+.accept-btn:hover:not(:disabled) { background: #218838; }
+
+.start-btn { background: #007bff; }
+.start-btn:hover:not(:disabled) { background: #0069d9; }
+
+.end-btn { background: #dc3545; }
+.end-btn:hover:not(:disabled) { background: #c82333; }
+
+.completion-summary {
+  background: #d4edda;
+  color: #155724;
+  padding: 15px;
+  border-radius: 6px;
+  width: 100%;
+  text-align: center;
+}
+.completion-summary h4 { margin: 0 0 5px 0; }
+.completion-summary p { margin: 0; font-size: 0.9em; }

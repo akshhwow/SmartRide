@@ -1,0 +1,65 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ------------------< com.smartride:smartride-backend >-------------------
+[INFO] Building smartride-backend 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ smartride-backend ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 0 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.11.0:compile (default-compile) @ smartride-backend ---
+[INFO] Changes detected - recompiling the module! :source
+[INFO] Compiling 63 source files with javac [forked debug release 21] to target\classes
+[INFO] -------------------------------------------------------------
+[ERROR] COMPILATION ERROR : 
+[INFO] -------------------------------------------------------------
+[ERROR] C:\Users\aksha\OneDrive\Desktop\Riddinggg\smartride-backend-main\smartride-backend\src\main\java\com\smartride\controller\NotificationController.java:[38,44] error: method success in class ApiResponse<T#2> cannot be applied to given types;
+  required: String,T#1
+  found:    String
+  reason: cannot infer type-variable(s) T#1
+    (actual and formal argument lists differ in length)
+  where T#1,T#2 are type-variables:
+    T#1 extends Object declared in method <T#1>success(String,T#1)
+    T#2 extends Object declared in class ApiResponse
+[ERROR] C:\Users\aksha\OneDrive\Desktop\Riddinggg\smartride-backend-main\smartride-backend\src\main\java\com\smartride\controller\NotificationController.java:[47,44] error: method success in class ApiResponse<T#2> cannot be applied to given types;
+  required: String,T#1
+  found:    String
+  reason: cannot infer type-variable(s) T#1
+    (actual and formal argument lists differ in length)
+  where T#1,T#2 are type-variables:
+    T#1 extends Object declared in method <T#1>success(String,T#1)
+    T#2 extends Object declared in class ApiResponse
+[INFO] 2 errors 
+[INFO] -------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  10.380 s
+[INFO] Finished at: 2026-03-14T23:22:38+05:30
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.11.0:compile (default-compile) on project smartride-backend: Compilation failure: Compilation failure: 
+[ERROR] C:\Users\aksha\OneDrive\Desktop\Riddinggg\smartride-backend-main\smartride-backend\src\main\java\com\smartride\controller\NotificationController.java:[38,44] error: method success in class ApiResponse<T#2> cannot be applied to given types;
+[ERROR]   required: String,T#1
+[ERROR]   found:    String
+[ERROR]   reason: cannot infer type-variable(s) T#1
+[ERROR]     (actual and formal argument lists differ in length)
+[ERROR]   where T#1,T#2 are type-variables:
+[ERROR]     T#1 extends Object declared in method <T#1>success(String,T#1)
+[ERROR]     T#2 extends Object declared in class ApiResponse
+[ERROR] C:\Users\aksha\OneDrive\Desktop\Riddinggg\smartride-backend-main\smartride-backend\src\main\java\com\smartride\controller\NotificationController.java:[47,44] error: method success in class ApiResponse<T#2> cannot be applied to given types;
+[ERROR]   required: String,T#1
+[ERROR]   found:    String
+[ERROR]   reason: cannot infer type-variable(s) T#1
+[ERROR]     (actual and formal argument lists differ in length)
+[ERROR]   where T#1,T#2 are type-variables:
+[ERROR]     T#1 extends Object declared in method <T#1>success(String,T#1)
+[ERROR]     T#2 extends Object declared in class ApiResponse
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

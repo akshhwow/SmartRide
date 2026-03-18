@@ -1,0 +1,546 @@
+// ================== SEARCHRIDES.JSX ==================
+// Save as: src/pages/SearchRides.jsx
+
+import React, { useState } from 'react';
+import { rideAPI, bookingAPI } from '../services/api';
+import { useAuth } from '../context/AuthContext';
+import { toast } from 'react-toastify';
+import './SearchRides.css';
+
+const SearchRides = () => {
+  const { isAuthenticated, isPassenger } = useAuth();
+  const [searchParams, setSearchParams] = useState({
+    source: '',
+    destination: '',
+    date: '',
+    seats: 1
+  });
+  const [rides, setRides] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [bookingRideId, setBookingRideId] = useState(null);
+
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const response = await rideAPI.searchRides(searchParams);
+      setRides(response.data.data || []);
+      toast.success(response.data.message);
+    } catch (error) {
+      toast.error('Failed to search rides');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleBook = async (rideId) => {
+    if (!isAuthenticated()) {
+      toast.info('Please login to book rides');
+      return;
+    }
+
+    if (!isPassenger()) {
+      toast.error('Only passengers can book rides');
+      return;
+    }
+
+    const seatsToBook = prompt('How many seats do you want to book?', '1');
+    if (!seatsToBook) return;
+
+    setBookingRideId(rideId);
+
+    try {
+      const response = await bookingAPI.bookRide({
+        rideId,
+        seatsToBook: parseInt(seatsToBook),
+        pickupLocation: searchParams.source,
+        dropLocation: searchParams.destination
+      });
+
+      toast.success(response.data.message);
+      handleSearch(new Event('submit'));
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Booking failed');
+    } finally {
+      setBookingRideId(null);
+    }
+  };
+
+  return (
+    <div className="search-container">
+      <div className="search-card">
+        <h2>Find Your Ride 🔍</h2>
+
+        <form onSubmit={handleSearch} className="search-form">
+          <div className="form-row">
+            <div className="form-group">
+              <label>From</label>
+              <input
+                type="text"
+                value={searchParams.source}
+                onChange={(e) => setSearchParams({...searchParams, source: e.target.value})}
+                required
+                placeholder="Mumbai"
+              />
+            </div>
+
+            <div className="form-group">
+              <label>To</label>
+              <input
+                type="text"
+                value={searchParams.destination}
+                onChange={(e) => setSearchParams({...searchParams, destination: e.target.value})}
+                required
+                placeholder="Pune"
+              />
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label>Date</label>
+              <input
+                type="date"
+                value={searchParams.date}
+                onChange={(e) => setSearchParams({...searchParams, date: e.target.value})}
+                min={new Date().toISOString().split('T')[0]}
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Seats</label>
+              <input
+                type="number"
+                value={searchParams.seats}
+                onChange={(e) => setSearchParams({...searchParams, seats: e.target.value})}
+                min="1"
+                max="8"
+              />
+            </div>
+          </div>
+
+          <button type="submit" className="search-button" disabled={loading}>
+            {loading ? 'Searching...' : 'Search Rides'}
+          </button>
+        </form>
+
+        {rides.length > 0 && (
+          <div className="rides-list">
+            <h3>Available Rides ({rides.length})</h3>
+            
+            {rides.map((ride) => (
+              <div key={ride.id} className="ride-card">
+                <div className="ride-header">
+                  <div className="ride-route">
+                    <span className="location">{ride.source}</span>
+                    <span className="arrow">→</span>
+                    <span className="location">{ride.destination}</span>
+                  </div>
+                  <div className="ride-price">₹{ride.pricePerSeat}/seat</div>
+                </div>
+
+                <div className="ride-details">
+                  <div className="detail-item">
+                    <span className="label">Driver:</span>
+                    <span>{ride.driverName}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="label">Date:</span>
+                    <span>{ride.rideDate}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="label">Time:</span>
+                    <span>{ride.departureTime}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="label">Available:</span>
+                    <span>{ride.availableSeats} seats</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="label">Vehicle:</span>
+                    <span>{ride.driverVehicleType}</span>
+                  </div>
+                  {ride.distanceKm && (
+                    <div className="detail-item">
+                      <span className="label">Distance:</span>
+                      <span>{ride.distanceKm} km</span>
+                    </div>
+                  )}
+                </div>
+
+                {ride.notes && (
+                  <div className="ride-notes">
+                    <strong>Notes:</strong> {ride.notes}
+                  </div>
+                )}
+
+                <button
+                  onClick={() => handleBook(ride.id)}
+                  className="book-button"
+                  disabled={bookingRideId === ride.id}
+                >
+                  {bookingRideId === ride.id ? 'Booking...' : 'Book Now'}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {rides.length === 0 && !loading && (
+          <div className="no-rides">
+            <p>No rides found. Try different search criteria.</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default SearchRides;
+
+
+// ================== SEARCHRIDES.CSS ==================
+// Save as: src/pages/SearchRides.css
+
+.search-container {
+  min-height: calc(100vh - 80px);
+  padding: 2rem;
+}
+
+.search-card {
+  max-width: 800px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+.search-card h2 {
+  color: #1f2937;
+  margin-bottom: 2rem;
+  text-align: center;
+  font-size: 2rem;
+}
+
+.search-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.search-button {
+  padding: 1rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.3s;
+}
+
+.search-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.rides-list {
+  margin-top: 2rem;
+}
+
+.rides-list h3 {
+  color: #374151;
+  margin-bottom: 1.5rem;
+}
+
+.ride-card {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  transition: border-color 0.3s;
+}
+
+.ride-card:hover {
+  border-color: #667eea;
+}
+
+.ride-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.ride-route {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 1.2rem;
+}
+
+.location {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.arrow {
+  color: #667eea;
+  font-size: 1.5rem;
+}
+
+.ride-price {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #10b981;
+}
+
+.ride-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.detail-item .label {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.detail-item span:last-child {
+  font-weight: 600;
+  color: #374151;
+}
+
+.ride-notes {
+  background: rgba(102, 126, 234, 0.1);
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  color: #4b5563;
+}
+
+.book-button {
+  width: 100%;
+  padding: 0.75rem;
+  background: #10b981;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.book-button:hover:not(:disabled) {
+  background: #059669;
+}
+
+.book-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.no-rides {
+  text-align: center;
+  padding: 3rem;
+  color: #6b7280;
+}
+
+@media (max-width: 768px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .ride-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+}
+
+
+// ================== POSTRIDE.JSX ==================
+// Save as: src/pages/PostRide.jsx
+
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { rideAPI } from '../services/api';
+import { toast } from 'react-toastify';
+import './Auth.css';
+
+const PostRide = () => {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    source: '',
+    destination: '',
+    rideDate: '',
+    departureTime: '',
+    seatsOffered: 1,
+    pricePerSeat: '',
+    notes: '',
+    distanceKm: ''
+  });
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const response = await rideAPI.postRide({
+        ...formData,
+        seatsOffered: parseInt(formData.seatsOffered),
+        pricePerSeat: parseFloat(formData.pricePerSeat),
+        distanceKm: formData.distanceKm ? parseFloat(formData.distanceKm) : null
+      });
+
+      toast.success(response.data.message);
+      navigate('/my-rides');
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to post ride');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="auth-container">
+      <div className="auth-card">
+        <h2 className="auth-title">Post a Ride 🚗</h2>
+        <p className="auth-subtitle">Share your journey with others</p>
+
+        <form onSubmit={handleSubmit} className="auth-form">
+          <div className="form-group">
+            <label>From (Source)</label>
+            <input
+              type="text"
+              name="source"
+              value={formData.source}
+              onChange={handleChange}
+              required
+              placeholder="Mumbai"
+            />
+          </div>
+
+          <div className="form-group">
+            <label>To (Destination)</label>
+            <input
+              type="text"
+              name="destination"
+              value={formData.destination}
+              onChange={handleChange}
+              required
+              placeholder="Pune"
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Date</label>
+            <input
+              type="date"
+              name="rideDate"
+              value={formData.rideDate}
+              onChange={handleChange}
+              required
+              min={new Date().toISOString().split('T')[0]}
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Departure Time</label>
+            <input
+              type="time"
+              name="departureTime"
+              value={formData.departureTime}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Seats Available</label>
+            <input
+              type="number"
+              name="seatsOffered"
+              value={formData.seatsOffered}
+              onChange={handleChange}
+              required
+              min="1"
+              max="8"
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Price per Seat (₹)</label>
+            <input
+              type="number"
+              name="pricePerSeat"
+              value={formData.pricePerSeat}
+              onChange={handleChange}
+              required
+              min="1"
+              step="0.01"
+              placeholder="500"
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Distance (km) - Optional</label>
+            <input
+              type="number"
+              name="distanceKm"
+              value={formData.distanceKm}
+              onChange={handleChange}
+              min="1"
+              placeholder="150"
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Additional Notes (Optional)</label>
+            <textarea
+              name="notes"
+              value={formData.notes}
+              onChange={handleChange}
+              placeholder="E.g., No smoking, AC available, pet friendly..."
+              rows="3"
+              style={{ resize: 'vertical', padding: '0.75rem', borderRadius: '8px', border: '2px solid #e5e7eb' }}
+            />
+          </div>
+
+          <button type="submit" className="auth-button" disabled={loading}>
+            {loading ? 'Posting...' : 'Post Ride'}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default PostRide;
+
+
+// Continue in next message for MyRides and MyBookings...
