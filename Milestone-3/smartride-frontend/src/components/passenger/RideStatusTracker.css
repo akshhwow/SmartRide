@@ -1,0 +1,112 @@
+.ride-status-tracker {
+  margin-top: 15px;
+  padding: 15px;
+  background: #fdfdfd;
+  border-radius: 8px;
+  border: 1px solid #eee;
+}
+
+.tracker-timeline {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  margin-bottom: 20px;
+  padding: 0 10px;
+}
+
+.tracker-line-bg {
+  position: absolute;
+  top: 15px;
+  left: 20px;
+  right: 20px;
+  height: 3px;
+  background: #e9ecef;
+  z-index: 1;
+}
+
+.tracker-line-fill {
+  height: 100%;
+  background: #007bff;
+  transition: width 0.5s ease-in-out;
+}
+
+.tracker-step {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: #adb5bd;
+}
+
+.tracker-step.active {
+  color: #007bff;
+}
+
+.step-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: white;
+  border: 3px solid #e9ecef;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.9em;
+  transition: all 0.3s;
+}
+
+.tracker-step.active .step-circle {
+  border-color: #007bff;
+  background: #007bff;
+  color: white;
+}
+
+.tracker-step.current .step-circle {
+  box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.2);
+  animation: pulse 2s infinite;
+}
+
+.step-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.4); }
+  70% { box-shadow: 0 0 0 8px rgba(0, 123, 255, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0); }
+}
+
+.live-message-box {
+  background: #e6f2ff;
+  border-radius: 6px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.live-message-box p {
+  margin: 0;
+  color: #004085;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #007bff;
+  border-radius: 50%;
+  animation: blip 1.5s infinite;
+}
+
+@keyframes blip {
+  0% { opacity: 1; }
+  50% { opacity: 0.4; }
+  100% { opacity: 1; }
+}

@@ -1,0 +1,362 @@
+// ================== LOGIN.JSX ==================
+// Save as: src/pages/Login.jsx
+
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { authAPI } from '../services/api';
+import { useAuth } from '../context/AuthContext';
+import { toast } from 'react-toastify';
+import './Auth.css';
+
+const Login = () => {
+  const navigate = useNavigate();
+  const { login } = useAuth();
+  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const response = await authAPI.login(formData);
+      
+      if (response.data.success) {
+        login(response.data.data.token, response.data.data.user);
+        toast.success(response.data.message);
+        navigate('/dashboard');
+      }
+    } catch (error) {
+      if (error.response?.data?.message?.includes('verify your email')) {
+        toast.info('Please verify your email first');
+        navigate('/verify-otp', { state: { email: formData.email } });
+      } else {
+        toast.error(error.response?.data?.message || 'Login failed');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="auth-container">
+      <div className="auth-card">
+        <h2 className="auth-title">Welcome Back!</h2>
+        <p className="auth-subtitle">Login to continue</p>
+
+        <form onSubmit={handleSubmit} className="auth-form">
+          <div className="form-group">
+            <label>Email</label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              placeholder="your@email.com"
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Password</label>
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+              placeholder="Enter your password"
+            />
+          </div>
+
+          <button type="submit" className="auth-button" disabled={loading}>
+            {loading ? 'Logging in...' : 'Login'}
+          </button>
+
+          <p className="auth-footer">
+            Don't have an account? <Link to="/register">Register</Link>
+          </p>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default Login;
+
+
+// ================== VERIFYOTP.JSX ==================
+// Save as: src/pages/VerifyOtp.jsx
+
+import React, { useState } from 'react';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { authAPI } from '../services/api';
+import { useAuth } from '../context/AuthContext';
+import { toast } from 'react-toastify';
+import './Auth.css';
+
+const VerifyOtp = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { login } = useAuth();
+  const [otp, setOtp] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
+  
+  const email = location.state?.email || '';
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const response = await authAPI.verifyOtp({ email, otpCode: otp });
+      
+      if (response.data.success) {
+        login(response.data.data.token, response.data.data.user);
+        toast.success(response.data.message);
+        navigate('/dashboard');
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Invalid OTP');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    setResending(true);
+    try {
+      const response = await authAPI.resendOtp(email);
+      toast.success(response.data.message);
+    } catch (error) {
+      toast.error('Failed to resend OTP');
+    } finally {
+      setResending(false);
+    }
+  };
+
+  return (
+    <div className="auth-container">
+      <div className="auth-card">
+        <h2 className="auth-title">Verify Email</h2>
+        <p className="auth-subtitle">
+          Enter the 6-digit code sent to<br />
+          <strong>{email}</strong>
+        </p>
+
+        <form onSubmit={handleSubmit} className="auth-form">
+          <div className="form-group">
+            <label>OTP Code</label>
+            <input
+              type="text"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              required
+              maxLength="6"
+              placeholder="123456"
+              style={{ fontSize: '1.5rem', textAlign: 'center', letterSpacing: '0.5rem' }}
+            />
+          </div>
+
+          <button type="submit" className="auth-button" disabled={loading}>
+            {loading ? 'Verifying...' : 'Verify OTP'}
+          </button>
+
+          <button
+            type="button"
+            onClick={handleResend}
+            disabled={resending}
+            className="auth-button"
+            style={{ background: 'transparent', color: '#667eea', border: '2px solid #667eea', marginTop: '0.5rem' }}
+          >
+            {resending ? 'Sending...' : 'Resend OTP'}
+          </button>
+
+          <p className="auth-footer">
+            <Link to="/login">Back to Login</Link>
+          </p>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default VerifyOtp;
+
+
+// ================== DASHBOARD.JSX ==================
+// Save as: src/pages/Dashboard.jsx
+
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import './Dashboard.css';
+
+const Dashboard = () => {
+  const { user } = useAuth();
+
+  return (
+    <div className="dashboard-container">
+      <div className="dashboard-card">
+        <div className="dashboard-header">
+          <h1>Welcome, {user?.fullName}! 👋</h1>
+          <p className="dashboard-role">Role: {user?.role}</p>
+        </div>
+
+        {user?.role === 'DRIVER' ? (
+          <div className="dashboard-actions">
+            <h2>What would you like to do?</h2>
+            
+            <Link to="/post-ride" className="dashboard-action-card">
+              <div className="action-icon">🚗</div>
+              <h3>Post a New Ride</h3>
+              <p>Offer your seats to passengers</p>
+            </Link>
+
+            <Link to="/my-rides" className="dashboard-action-card">
+              <div className="action-icon">📋</div>
+              <h3>My Rides</h3>
+              <p>View and manage your posted rides</p>
+            </Link>
+
+            <div className="driver-info-card">
+              <h3>Your Vehicle</h3>
+              <p><strong>Model:</strong> {user?.carModel}</p>
+              <p><strong>Plate:</strong> {user?.licensePlate}</p>
+              <p><strong>Type:</strong> {user?.vehicleType}</p>
+              <p><strong>Capacity:</strong> {user?.vehicleCapacity} seats</p>
+            </div>
+          </div>
+        ) : (
+          <div className="dashboard-actions">
+            <h2>What would you like to do?</h2>
+            
+            <Link to="/search" className="dashboard-action-card">
+              <div className="action-icon">🔍</div>
+              <h3>Search Rides</h3>
+              <p>Find rides to your destination</p>
+            </Link>
+
+            <Link to="/my-bookings" className="dashboard-action-card">
+              <div className="action-icon">🎫</div>
+              <h3>My Bookings</h3>
+              <p>View your booked rides</p>
+            </Link>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default Dashboard;
+
+
+// ================== DASHBOARD.CSS ==================
+// Save as: src/pages/Dashboard.css
+
+.dashboard-container {
+  min-height: calc(100vh - 80px);
+  padding: 2rem;
+}
+
+.dashboard-card {
+  max-width: 1000px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 20px;
+  padding: 3rem;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.dashboard-header h1 {
+  color: #1f2937;
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.dashboard-role {
+  display: inline-block;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 0.5rem 1.5rem;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+.dashboard-actions {
+  display: grid;
+  gap: 2rem;
+}
+
+.dashboard-actions h2 {
+  color: #374151;
+  margin-bottom: 1rem;
+}
+
+.dashboard-action-card {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+  padding: 2rem;
+  border-radius: 16px;
+  text-decoration: none;
+  transition: transform 0.3s, box-shadow 0.3s;
+  border: 2px solid transparent;
+}
+
+.dashboard-action-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
+  border-color: #667eea;
+}
+
+.action-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.dashboard-action-card h3 {
+  color: #667eea;
+  margin-bottom: 0.5rem;
+  font-size: 1.5rem;
+}
+
+.dashboard-action-card p {
+  color: #6b7280;
+}
+
+.driver-info-card {
+  background: #f3f4f6;
+  padding: 2rem;
+  border-radius: 16px;
+  margin-top: 2rem;
+}
+
+.driver-info-card h3 {
+  color: #374151;
+  margin-bottom: 1rem;
+}
+
+.driver-info-card p {
+  color: #6b7280;
+  margin: 0.5rem 0;
+}
+
+@media (max-width: 768px) {
+  .dashboard-card {
+    padding: 2rem 1.5rem;
+  }
+  
+  .dashboard-header h1 {
+    font-size: 2rem;
+  }
+}

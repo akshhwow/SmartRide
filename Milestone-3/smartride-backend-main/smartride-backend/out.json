@@ -1,0 +1,1 @@
+{"success":true,"message":"Fare estimate calculated","data":{"distanceKm":8.33,"baseFare":0.0,"farePerKm":0.0,"totalFare":1500.0,"passengerFare":500.0,"farePerSeat":500.0,"seatsBooked":1}}
