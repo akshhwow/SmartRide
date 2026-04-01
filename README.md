@@ -192,19 +192,4 @@ Screenshot assets are available in:
 - User profile management and ride history export
 - Enhanced route filtering with distance and time windows
 
----
 
-## 🤝 Contribution Guidelines
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/your-feature`
-3. Make your changes
-4. Test locally
-5. Submit a pull request with a clear description
-6. Follow existing project structure and naming conventions
-
----
-
-## 📄 License
-
-This project is released under the MIT License.
